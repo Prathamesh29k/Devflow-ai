@@ -4,7 +4,7 @@
 
 ## 🔗 Links
 - Live Demo: https://vercel.com/prathamesh-taraprakash-chohales-projects/devflow-ai/8AAcwipmCYiyKXUWRnrw8t9TnaHN
-- **Video:** [YOUR YOUTUBE URL]
+- **Video:** https://youtu.be/x3WK2EOvSFA?si=Exf1o0At01SdNfYJ
 
 ## 💡 What It Does
 AI-powered workflow optimizer that predicts development bottlenecks 
