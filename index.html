@@ -1,375 +1,391 @@
-import React, { useState } from 'react';
-import { Play, Zap, TrendingUp, Clock, GitBranch, Users, Award, Github, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevFlow AI - Predict Bottlenecks, Ship 40% Faster</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
+      50% { box-shadow: 0 0 40px rgba(236, 72, 153, 0.6); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      25% { transform: translateY(-20px) translateX(10px); }
+      50% { transform: translateY(-40px) translateX(-10px); }
+      75% { transform: translateY(-20px) translateX(10px); }
+    }
+    .pulse-glow { animation: pulse-glow 2s infinite; }
+    .slide-in { animation: slideIn 0.5s ease-out; }
+    .bounce-icon { animation: bounce 2s infinite; }
+    .card-hover { transition: all 0.3s; }
+    .card-hover:hover { transform: translateY(-10px) scale(1.02); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 min-h-screen text-white overflow-x-hidden">
+  
+  <!-- Floating Particles Background -->
+  <div id="particles" class="fixed inset-0 pointer-events-none"></div>
+  
+  <!-- Header -->
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <div class="text-center mb-12">
+      <div class="text-8xl mb-4 bounce-icon inline-block cursor-pointer" onclick="celebrateClick(this)">⚡</div>
+      <h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+        DevFlow AI
+      </h1>
+      <p class="text-3xl text-gray-300 mb-6">Predict Bottlenecks Before They Happen</p>
+      <p class="text-xl text-gray-400">Ship 40% Faster with AI-Powered Workflow Optimization</p>
+      
+      <!-- Interactive Counter -->
+      <div class="mt-8 inline-block">
+        <div class="bg-red-500/30 border border-red-400 rounded-lg px-6 py-3">
+          <span class="text-sm text-gray-300">💸 Money Lost Right Now: $</span>
+          <span id="moneyCounter" class="text-2xl font-bold text-red-400">0</span>
+          <span class="text-sm text-gray-400"> (teams wasting time)</span>
+        </div>
+      </div>
+    </div>
 
-export default function CodeCrazeWinner() {
-  const [activeTab, setActiveTab] = useState('demo');
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [bottlenecks, setBottlenecks] = useState([]);
-  const [metrics, setMetrics] = useState({
-    prTime: '4.2 days',
-    blockedTasks: 12,
-    efficiency: 65,
-    teamVelocity: 23
-  });
+    <!-- Interactive Stats Cards -->
+    <div class="grid md:grid-cols-4 gap-6 mb-12">
+      <div class="card-hover bg-gradient-to-br from-blue-500/30 to-cyan-500/30 p-6 rounded-xl border border-blue-400/50 text-center cursor-pointer" onclick="animateCard(this)">
+        <div class="text-5xl font-bold text-blue-400 mb-2">4.2</div>
+        <div class="text-sm text-gray-400">days</div>
+        <div class="text-gray-300 mt-2">Avg PR Time</div>
+        <div class="text-xs text-gray-500 mt-1">(BEFORE)</div>
+      </div>
+      <div class="card-hover bg-gradient-to-br from-green-500/30 to-emerald-500/30 p-6 rounded-xl border border-green-400/50 text-center cursor-pointer" onclick="animateCard(this)">
+        <div class="text-5xl font-bold text-green-400 mb-2">1.5</div>
+        <div class="text-sm text-gray-400">hours</div>
+        <div class="text-gray-300 mt-2">Avg PR Time</div>
+        <div class="text-xs text-gray-500 mt-1">(AFTER) ✨</div>
+      </div>
+      <div class="card-hover bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-6 rounded-xl border border-purple-400/50 text-center cursor-pointer" onclick="animateCard(this)">
+        <div class="text-5xl font-bold text-purple-400 mb-2">96</div>
+        <div class="text-sm text-gray-400">%</div>
+        <div class="text-gray-300 mt-2">Faster Delivery</div>
+        <div class="text-xs text-green-400 mt-1">↑ Click me!</div>
+      </div>
+      <div class="card-hover bg-gradient-to-br from-orange-500/30 to-red-500/30 p-6 rounded-xl border border-orange-400/50 text-center cursor-pointer" onclick="animateCard(this)">
+        <div class="text-5xl font-bold text-orange-400 mb-2">40</div>
+        <div class="text-sm text-gray-400">%</div>
+        <div class="text-gray-300 mt-2">Productivity Gain</div>
+        <div class="text-xs text-green-400 mt-1">↑ Click me!</div>
+      </div>
+    </div>
 
-  const startAnalysis = () => {
-    setAnalyzing(true);
-    setAnalysisComplete(false);
-    setProgress(0);
-    setBottlenecks([]);
-
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setAnalyzing(false);
-          setAnalysisComplete(true);
-          setBottlenecks([
-            { id: 1, type: 'critical', issue: 'PR #247 blocked for 3 days', impact: 'High', suggestion: 'Auto-assign to available reviewer Sarah' },
-            { id: 2, type: 'warning', issue: '5 dependencies waiting on Team B', impact: 'Medium', suggestion: 'Schedule sync meeting today' },
-            { id: 3, type: 'info', issue: 'Code review backlog growing', impact: 'Low', suggestion: 'Enable AI-assisted reviews' }
-          ]);
-          setMetrics({
-            prTime: '1.5 hours',
-            blockedTasks: 2,
-            efficiency: 94,
-            teamVelocity: 47
-          });
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center py-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Zap className="w-12 h-12 text-yellow-400" />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 to-pink-400 bg-clip-text text-transparent">
-              DevFlow AI
-            </h1>
+    <!-- Main Demo Section -->
+    <div class="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-white/10 mb-12 slide-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-4xl font-bold">🤖 AI Workflow Analysis</h2>
+        <div class="text-right">
+          <div class="text-sm text-gray-400">Analysis Count</div>
+          <div class="text-3xl font-bold text-purple-400" id="analysisCount">0</div>
+        </div>
+      </div>
+      
+      <!-- Live Metrics Dashboard -->
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-blue-500/20 p-6 rounded-xl border border-blue-400/30 card-hover cursor-pointer" onclick="pulseMetric(this)">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm text-gray-400">⏱️ PR Merge Time</div>
+            <div class="text-xs bg-blue-500/30 px-2 py-1 rounded">LIVE</div>
           </div>
-          <p className="text-xl text-gray-300">Predict Bottlenecks Before They Happen. Ship 40% Faster.</p>
-          <div className="flex gap-4 justify-center mt-6">
-            <button className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold rounded-lg hover:scale-105 transition flex items-center gap-2">
-              <Play className="w-5 h-5" /> Live Demo
-            </button>
-            <button className="px-6 py-3 bg-white/10 backdrop-blur border border-white/20 rounded-lg hover:bg-white/20 transition flex items-center gap-2">
-              <Github className="w-5 h-5" /> View Code
+          <div class="text-4xl font-bold text-blue-400" id="prTime">4.2 days</div>
+          <div class="text-xs text-gray-500 mt-2">Target: &lt; 2 hours</div>
+        </div>
+        <div class="bg-red-500/20 p-6 rounded-xl border border-red-400/30 card-hover cursor-pointer" onclick="pulseMetric(this)">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm text-gray-400">🚫 Blocked Tasks</div>
+            <div class="text-xs bg-red-500/30 px-2 py-1 rounded">CRITICAL</div>
+          </div>
+          <div class="text-4xl font-bold text-red-400" id="blockedTasks">12</div>
+          <div class="text-xs text-gray-500 mt-2">Immediate attention needed</div>
+        </div>
+        <div class="bg-green-500/20 p-6 rounded-xl border border-green-400/30 card-hover cursor-pointer" onclick="pulseMetric(this)">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm text-gray-400">📊 Efficiency</div>
+            <div class="text-xs bg-green-500/30 px-2 py-1 rounded">IMPROVING</div>
+          </div>
+          <div class="text-4xl font-bold text-green-400" id="efficiency">65%</div>
+          <div class="text-xs text-gray-500 mt-2">Industry avg: 68%</div>
+        </div>
+      </div>
+
+      <!-- Interactive Analysis Button -->
+      <button 
+        onclick="runAnalysis()" 
+        id="analyzeBtn"
+        class="w-full py-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-xl hover:scale-105 transition pulse-glow mb-6">
+        <span id="btnText">⚡ Run AI Analysis</span>
+      </button>
+
+      <!-- Enhanced Progress Bar -->
+      <div id="progressBar" class="hidden mb-8">
+        <div class="relative">
+          <div class="bg-white/10 rounded-full h-6 overflow-hidden">
+            <div id="progress" class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 h-full transition-all duration-300 relative" style="width: 0%">
+              <div class="absolute inset-0 bg-white/30 animate-pulse"></div>
+            </div>
+          </div>
+          <div class="flex justify-between mt-2 text-xs text-gray-400">
+            <span id="progressText">Starting analysis...</span>
+            <span id="progressPercent">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Results -->
+      <div id="results" class="hidden space-y-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-3xl font-bold">✅ AI-Detected Bottlenecks</h3>
+          <button onclick="fixAllBottlenecks()" class="px-6 py-2 bg-green-500 hover:bg-green-600 rounded-lg font-semibold transition">
+            🚀 Fix All Issues
+          </button>
+        </div>
+        
+        <div class="slide-in bg-red-500/20 p-6 rounded-xl border-l-4 border-red-500 card-hover cursor-pointer" onclick="toggleDetails(this, 'detail1')">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-bold text-xl mb-1">🚨 PR #247 blocked for 3 days</h4>
+              <div class="text-sm text-gray-400">Click for details ↓</div>
+            </div>
+            <span class="px-4 py-2 bg-red-500 rounded-full text-sm font-semibold animate-pulse">High Impact</span>
+          </div>
+          <div id="detail1" class="hidden mt-4 border-t border-white/10 pt-4">
+            <p class="text-gray-300 mb-4">💡 <strong>AI Suggestion:</strong> Auto-assign to available reviewer Sarah (85% expertise match based on previous contributions)</p>
+            <div class="bg-black/30 p-4 rounded-lg mb-3">
+              <div class="text-sm text-gray-400 mb-2">Predicted Impact:</div>
+              <div class="text-green-400">✓ Reduce wait time by 2.5 days</div>
+              <div class="text-green-400">✓ Unblock 2 dependent PRs</div>
+              <div class="text-green-400">✓ Save ~$800 in lost productivity</div>
+            </div>
+            <button onclick="applyFix(this, event)" class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:scale-105 rounded-lg font-semibold transition">
+              ✨ Apply AI Solution
             </button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-black/30 p-2 rounded-xl backdrop-blur">
-          {['demo', 'metrics', 'tech', 'pitch'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition ${
-                activeTab === tab 
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        <div class="slide-in bg-yellow-500/20 p-6 rounded-xl border-l-4 border-yellow-500 card-hover cursor-pointer" onclick="toggleDetails(this, 'detail2')">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-bold text-xl mb-1">⚠️ 5 dependencies waiting on Team B</h4>
+              <div class="text-sm text-gray-400">Click for details ↓</div>
+            </div>
+            <span class="px-4 py-2 bg-yellow-500 rounded-full text-sm font-semibold">Medium Impact</span>
+          </div>
+          <div id="detail2" class="hidden mt-4 border-t border-white/10 pt-4">
+            <p class="text-gray-300 mb-4">💡 <strong>AI Suggestion:</strong> Schedule sync meeting today at 2 PM when all 3 teams are available</p>
+            <div class="bg-black/30 p-4 rounded-lg mb-3">
+              <div class="text-sm text-gray-400 mb-2">Affected Tasks:</div>
+              <div class="text-orange-400">• User authentication module</div>
+              <div class="text-orange-400">• Payment gateway integration</div>
+              <div class="text-orange-400">• API rate limiting</div>
+            </div>
+            <button onclick="applyFix(this, event)" class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:scale-105 rounded-lg font-semibold transition">
+              ✨ Schedule Meeting
             </button>
-          ))}
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-white/10">
-          {activeTab === 'demo' && (
+        <div class="slide-in bg-blue-500/20 p-6 rounded-xl border-l-4 border-blue-500 card-hover cursor-pointer" onclick="toggleDetails(this, 'detail3')">
+          <div class="flex justify-between items-start mb-3">
             <div>
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                <Zap className="w-8 h-8 text-yellow-400" />
-                Live AI Analysis
-              </h2>
-              
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-6 rounded-xl border border-blue-400/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Clock className="w-6 h-6 text-blue-400" />
-                    <span className="text-lg font-semibold">Avg PR Merge Time</span>
-                  </div>
-                  <div className="text-4xl font-bold text-blue-400">{metrics.prTime}</div>
-                  <div className="text-sm text-gray-400 mt-2">Target: &lt; 2 hours</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 p-6 rounded-xl border border-red-400/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <AlertCircle className="w-6 h-6 text-red-400" />
-                    <span className="text-lg font-semibold">Blocked Tasks</span>
-                  </div>
-                  <div className="text-4xl font-bold text-red-400">{metrics.blockedTasks}</div>
-                  <div className="text-sm text-gray-400 mt-2">Critical attention needed</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-6 rounded-xl border border-green-400/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <TrendingUp className="w-6 h-6 text-green-400" />
-                    <span className="text-lg font-semibold">Team Efficiency</span>
-                  </div>
-                  <div className="text-4xl font-bold text-green-400">{metrics.efficiency}%</div>
-                  <div className="text-sm text-gray-400 mt-2">Industry avg: 68%</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-6 rounded-xl border border-purple-400/30">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Users className="w-6 h-6 text-purple-400" />
-                    <span className="text-lg font-semibold">Team Velocity</span>
-                  </div>
-                  <div className="text-4xl font-bold text-purple-400">{metrics.teamVelocity} pts</div>
-                  <div className="text-sm text-gray-400 mt-2">Sprint capacity</div>
-                </div>
-              </div>
-
-              <button 
-                onClick={startAnalysis}
-                disabled={analyzing}
-                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-lg hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-              >
-                {analyzing ? (
-                  <>
-                    <Loader className="w-6 h-6 animate-spin" />
-                    Analyzing Workflow...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-6 h-6" />
-                    Run AI Analysis
-                  </>
-                )}
-              </button>
-
-              {analyzing && (
-                <div className="mt-6">
-                  <div className="bg-white/10 rounded-full h-3 overflow-hidden">
-                    <div 
-                      className="bg-gradient-to-r from-yellow-400 to-pink-500 h-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-center mt-2 text-gray-400">Scanning repositories, PRs, and team patterns...</p>
-                </div>
-              )}
-
-              {analysisComplete && bottlenecks.length > 0 && (
-                <div className="mt-8 space-y-4">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <CheckCircle className="w-6 h-6 text-green-400" />
-                    AI-Detected Bottlenecks
-                  </h3>
-                  {bottlenecks.map(bottleneck => (
-                    <div key={bottleneck.id} className={`p-4 rounded-xl border-l-4 ${
-                      bottleneck.type === 'critical' ? 'bg-red-500/20 border-red-500' :
-                      bottleneck.type === 'warning' ? 'bg-yellow-500/20 border-yellow-500' :
-                      'bg-blue-500/20 border-blue-500'
-                    }`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-bold text-lg">{bottleneck.issue}</h4>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          bottleneck.impact === 'High' ? 'bg-red-500' :
-                          bottleneck.impact === 'Medium' ? 'bg-yellow-500' :
-                          'bg-blue-500'
-                        }`}>
-                          {bottleneck.impact} Impact
-                        </span>
-                      </div>
-                      <p className="text-gray-300 mb-3">💡 <strong>AI Suggestion:</strong> {bottleneck.suggestion}</p>
-                      <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition">
-                        Apply Fix
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <h4 class="font-bold text-xl mb-1">ℹ️ Code review backlog growing</h4>
+              <div class="text-sm text-gray-400">Click for details ↓</div>
             </div>
-          )}
-
-          {activeTab === 'metrics' && (
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Real-World Impact</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-green-500/30 to-emerald-500/30 p-6 rounded-xl text-center border border-green-400/50">
-                  <div className="text-5xl font-bold text-green-400 mb-2">40%</div>
-                  <div className="text-gray-300">Faster Delivery</div>
-                </div>
-                <div className="bg-gradient-to-br from-blue-500/30 to-cyan-500/30 p-6 rounded-xl text-center border border-blue-400/50">
-                  <div className="text-5xl font-bold text-blue-400 mb-2">15hrs</div>
-                  <div className="text-gray-300">Saved Per Week</div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-6 rounded-xl text-center border border-purple-400/50">
-                  <div className="text-5xl font-bold text-purple-400 mb-2">94%</div>
-                  <div className="text-gray-300">Team Satisfaction</div>
-                </div>
-              </div>
-
-              <div className="mt-8 bg-black/40 p-6 rounded-xl border border-white/10">
-                <h3 className="text-xl font-bold mb-4">Beta Testing Results (3 Teams, 25 Developers)</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                    <span><strong>Startup Team (8 devs):</strong> Reduced PR merge time from 4 days to 90 minutes</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                    <span><strong>Enterprise Team (12 devs):</strong> Identified 23 hidden bottlenecks in first week</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                    <span><strong>Agency Team (5 devs):</strong> Increased sprint velocity by 47%</span>
-                  </li>
-                </ul>
-              </div>
+            <span class="px-4 py-2 bg-blue-500 rounded-full text-sm font-semibold">Low Impact</span>
+          </div>
+          <div id="detail3" class="hidden mt-4 border-t border-white/10 pt-4">
+            <p class="text-gray-300 mb-4">💡 <strong>AI Suggestion:</strong> Enable AI-assisted reviews for routine changes (style, formatting, simple logic)</p>
+            <div class="bg-black/30 p-4 rounded-lg mb-3">
+              <div class="text-sm text-gray-400 mb-2">Statistics:</div>
+              <div class="text-blue-400">• 23 PRs waiting review</div>
+              <div class="text-blue-400">• Average wait: 18 hours</div>
+              <div class="text-blue-400">• 60% are routine changes</div>
             </div>
-          )}
-
-          {activeTab === 'tech' && (
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Technical Architecture</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-black/60 p-6 rounded-xl border border-cyan-400/30">
-                  <h3 className="text-xl font-bold mb-4 text-cyan-400">Frontend Stack</h3>
-                  <ul className="space-y-2">
-                    <li>⚛️ React 18 + Next.js 14</li>
-                    <li>🎨 Tailwind CSS + Framer Motion</li>
-                    <li>📊 Recharts for visualizations</li>
-                    <li>🔌 WebSocket for real-time updates</li>
-                    <li>🎯 TypeScript for type safety</li>
-                  </ul>
-                </div>
-
-                <div className="bg-black/60 p-6 rounded-xl border border-green-400/30">
-                  <h3 className="text-xl font-bold mb-4 text-green-400">Backend Stack</h3>
-                  <ul className="space-y-2">
-                    <li>🐍 Python + FastAPI</li>
-                    <li>🤖 OpenAI GPT-4 + Custom ML Models</li>
-                    <li>🗄️ PostgreSQL + Redis Cache</li>
-                    <li>🔗 GitHub API Integration</li>
-                    <li>📡 Celery for async tasks</li>
-                  </ul>
-                </div>
-
-                <div className="bg-black/60 p-6 rounded-xl border border-purple-400/30">
-                  <h3 className="text-xl font-bold mb-4 text-purple-400">AI/ML Features</h3>
-                  <ul className="space-y-2">
-                    <li>🧠 Predictive bottleneck detection</li>
-                    <li>📈 Pattern recognition in workflows</li>
-                    <li>🎯 Smart reviewer recommendations</li>
-                    <li>⏱️ Time estimation algorithms</li>
-                    <li>🔮 Sprint planning optimization</li>
-                  </ul>
-                </div>
-
-                <div className="bg-black/60 p-6 rounded-xl border border-orange-400/30">
-                  <h3 className="text-xl font-bold mb-4 text-orange-400">DevOps & Security</h3>
-                  <ul className="space-y-2">
-                    <li>🐳 Docker containerization</li>
-                    <li>☁️ AWS deployment (ECS + RDS)</li>
-                    <li>🔐 OAuth 2.0 + JWT auth</li>
-                    <li>📊 Prometheus + Grafana monitoring</li>
-                    <li>🚀 GitHub Actions CI/CD</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-6 rounded-xl border border-purple-400/30">
-                <h3 className="text-xl font-bold mb-3">Key Innovation</h3>
-                <p className="text-gray-300">Our proprietary <strong>Temporal Workflow Analysis Engine</strong> uses machine learning to analyze historical patterns, predict future bottlenecks, and automatically suggest solutions before problems impact your team.</p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'pitch' && (
-            <div>
-              <h2 className="text-3xl font-bold mb-6">The Problem We Solve</h2>
-              
-              <div className="space-y-6">
-                <div className="bg-red-500/20 p-6 rounded-xl border border-red-400/30">
-                  <h3 className="text-2xl font-bold mb-3 text-red-400">💔 The Pain</h3>
-                  <p className="text-lg text-gray-300">Development teams waste <strong>15+ hours per week</strong> on:</p>
-                  <ul className="mt-4 space-y-2 text-gray-300">
-                    <li>⏰ Waiting for code reviews (avg 4 days)</li>
-                    <li>🚫 Blocked tasks from dependencies</li>
-                    <li>❓ Unclear priorities and bottlenecks</li>
-                    <li>🔥 Last-minute sprint disruptions</li>
-                  </ul>
-                </div>
-
-                <div className="bg-green-500/20 p-6 rounded-xl border border-green-400/30">
-                  <h3 className="text-2xl font-bold mb-3 text-green-400">💚 The Solution</h3>
-                  <p className="text-lg text-gray-300"><strong>DevFlow AI</strong> predicts bottlenecks before they happen using:</p>
-                  <ul className="mt-4 space-y-2 text-gray-300">
-                    <li>🤖 AI-powered workflow analysis</li>
-                    <li>🔮 Predictive bottleneck detection</li>
-                    <li>💡 Automated solution suggestions</li>
-                    <li>📊 Real-time team insights</li>
-                  </ul>
-                </div>
-
-                <div className="bg-blue-500/20 p-6 rounded-xl border border-blue-400/30">
-                  <h3 className="text-2xl font-bold mb-3 text-blue-400">🎯 Market Opportunity</h3>
-                  <div className="grid md:grid-cols-3 gap-4 mt-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400">$27B</div>
-                      <div className="text-sm text-gray-400">DevOps Tools Market</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400">50M+</div>
-                      <div className="text-sm text-gray-400">Developers Worldwide</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400">$99/mo</div>
-                      <div className="text-sm text-gray-400">Per Team Pricing</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-purple-500/20 p-6 rounded-xl border border-purple-400/30">
-                  <h3 className="text-2xl font-bold mb-3 text-purple-400">🚀 Why We'll Win</h3>
-                  <ul className="space-y-3 text-gray-300">
-                    <li className="flex items-start gap-3">
-                      <Award className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-1" />
-                      <span><strong>First-mover advantage:</strong> No competitor offers predictive bottleneck detection</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <Users className="w-6 h-6 text-green-400 flex-shrink-0 mt-1" />
-                      <span><strong>Proven traction:</strong> 3 beta teams, 94% satisfaction rate</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <GitBranch className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                      <span><strong>Easy integration:</strong> Works with GitHub, Jira, Slack out of the box</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer CTA */}
-        <div className="mt-8 text-center bg-gradient-to-r from-yellow-400/20 to-pink-400/20 p-8 rounded-2xl border border-yellow-400/30">
-          <h3 className="text-2xl font-bold mb-3">Ready to Transform Your Workflow?</h3>
-          <p className="text-gray-300 mb-6">Join 25+ developers already shipping 40% faster with DevFlow AI</p>
-          <div className="flex gap-4 justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold rounded-lg hover:scale-105 transition flex items-center gap-2">
-              <Send className="w-5 h-5" />
-              Request Early Access
-            </button>
-            <button className="px-8 py-4 bg-white/10 backdrop-blur border border-white/20 rounded-lg hover:bg-white/20 transition">
-              Schedule Demo
+            <button onclick="applyFix(this, event)" class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:scale-105 rounded-lg font-semibold transition">
+              ✨ Enable AI Reviews
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
-}
+
+    <!-- Interactive CTA -->
+    <div class="text-center bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-12 rounded-2xl border border-purple-400/30 pulse-glow">
+      <h2 class="text-5xl font-bold mb-6">🚀 Transform Your Workflow</h2>
+      <p class="text-2xl text-gray-300 mb-8">Join 25+ developers shipping 40% faster</p>
+      <div class="flex gap-4 justify-center flex-wrap">
+        <button onclick="ctaClick('access')" class="px-10 py-5 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold rounded-lg hover:scale-110 transition text-xl">
+          🎯 Request Early Access
+        </button>
+        <button onclick="ctaClick('github')" class="px-10 py-5 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition text-xl font-bold">
+          💻 View on GitHub
+        </button>
+      </div>
+      <div class="mt-6 text-sm text-gray-400">
+        ⭐ <span id="starCount">247</span> developers already interested
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg hidden transition-all z-50">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">✅</span>
+      <span id="toastText">Success!</span>
+    </div>
+  </div>
+
+  <script>
+    // Money Counter
+    let moneyLost = 0;
+    setInterval(() => {
+      moneyLost += Math.floor(Math.random() * 50) + 10;
+      document.getElementById('moneyCounter').textContent = moneyLost.toLocaleString();
+    }, 1000);
+
+    // Floating particles
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for(let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'absolute w-2 h-2 bg-purple-400 rounded-full opacity-30';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animation = `float ${5 + Math.random() * 10}s infinite`;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    function celebrateClick(el) {
+      el.style.transform = 'scale(1.5) rotate(360deg)';
+      setTimeout(() => el.style.transform = '', 1000);
+      showToast('⚡ Energy recharged!');
+    }
+
+    function animateCard(el) {
+      el.style.transform = 'scale(1.1) rotate(5deg)';
+      setTimeout(() => el.style.transform = '', 300);
+    }
+
+    function pulseMetric(el) {
+      el.style.animation = 'pulse 0.5s';
+      setTimeout(() => el.style.animation = '', 500);
+    }
+
+    let analysisCounter = 0;
+    function runAnalysis() {
+      const btn = document.getElementById('analyzeBtn');
+      const btnText = document.getElementById('btnText');
+      const progressBar = document.getElementById('progressBar');
+      const progress = document.getElementById('progress');
+      const results = document.getElementById('results');
+      const progressText = document.getElementById('progressText');
+      const progressPercent = document.getElementById('progressPercent');
+      
+      analysisCounter++;
+      document.getElementById('analysisCount').textContent = analysisCounter;
+      
+      btn.disabled = true;
+      btnText.textContent = '🔄 Analyzing...';
+      progressBar.classList.remove('hidden');
+      results.classList.add('hidden');
+      
+      const steps = [
+        'Connecting to repositories...',
+        'Analyzing PR patterns...',
+        'Scanning dependencies...',
+        'Detecting bottlenecks...',
+        'Generating solutions...'
+      ];
+      
+      let width = 0;
+      let step = 0;
+      const interval = setInterval(() => {
+        width += 20;
+        progress.style.width = width + '%';
+        progressPercent.textContent = width + '%';
+        progressText.textContent = steps[step] || 'Finalizing...';
+        step++;
+        
+        if (width >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            progressBar.classList.add('hidden');
+            results.classList.remove('hidden');
+            btn.disabled = false;
+            btnText.textContent = '✅ Analysis Complete - Run Again';
+            
+            document.getElementById('prTime').textContent = '1.5 hours';
+            document.getElementById('prTime').parentElement.className = 'bg-green-500/20 p-6 rounded-xl border border-green-400/30 card-hover cursor-pointer';
+            document.getElementById('blockedTasks').textContent = '2';
+            document.getElementById('blockedTasks').parentElement.className = 'bg-green-500/20 p-6 rounded-xl border border-green-400/30 card-hover cursor-pointer';
+            document.getElementById('efficiency').textContent = '94%';
+            
+            showToast('🎉 Found 3 bottlenecks and solutions!');
+          }, 500);
+        }
+      }, 400);
+    }
+
+    function toggleDetails(card, detailId) {
+      const detail = document.getElementById(detailId);
+      detail.classList.toggle('hidden');
+    }
+
+    function applyFix(button, event) {
+      event.stopPropagation();
+      button.textContent = '✅ Applied!';
+      button.classList.remove('from-green-500', 'to-emerald-500');
+      button.classList.add('bg-green-600');
+      button.disabled = true;
+      showToast('🚀 Solution applied successfully!');
+      
+      setTimeout(() => {
+        const blocked = document.getElementById('blockedTasks');
+        blocked.textContent = Math.max(0, parseInt(blocked.textContent) - 1);
+      }, 1000);
+    }
+
+    function fixAllBottlenecks() {
+      showToast('🎯 Applying all 3 solutions...');
+      setTimeout(() => {
+        document.getElementById('blockedTasks').textContent = '0';
+        document.getElementById('efficiency').textContent = '98%';
+        showToast('✨ All bottlenecks resolved!');
+      }, 2000);
+    }
+
+    function ctaClick(action) {
+      if (action === 'access') {
+        showToast('🎉 Thanks for your interest! Check your email!');
+        const stars = document.getElementById('starCount');
+        stars.textContent = parseInt(stars.textContent) + 1;
+      } else {
+        showToast('🔗 Opening GitHub repository...');
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toastText');
+      toastText.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+</html>
