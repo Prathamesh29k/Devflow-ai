@@ -1,391 +1,418 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevFlow AI - Predict Bottlenecks, Ship 40% Faster</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4); }
-      50% { box-shadow: 0 0 40px rgba(236, 72, 153, 0.6); }
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0) translateX(0); }
-      25% { transform: translateY(-20px) translateX(10px); }
-      50% { transform: translateY(-40px) translateX(-10px); }
-      75% { transform: translateY(-20px) translateX(10px); }
-    }
-    .pulse-glow { animation: pulse-glow 2s infinite; }
-    .slide-in { animation: slideIn 0.5s ease-out; }
-    .bounce-icon { animation: bounce 2s infinite; }
-    .card-hover { transition: all 0.3s; }
-    .card-hover:hover { transform: translateY(-10px) scale(1.02); }
-  </style>
-</head>
-<body class="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 min-h-screen text-white overflow-x-hidden">
+import React, { useState, useEffect, useRef } from 'react';
+import * as Tone from 'tone';
+
+const VibeCheck = () => {
+  const [isRunning, setIsRunning] = useState(false);
+  const [status, setStatus] = useState('Click "Start Vibe Check" to begin');
+  const [emotion, setEmotion] = useState({ name: 'neutral', intensity: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  <!-- Floating Particles Background -->
-  <div id="particles" class="fixed inset-0 pointer-events-none"></div>
-  
-  <!-- Header -->
-  <div class="container mx-auto px-4 py-8 relative z-10">
-    <div class="text-center mb-12">
-      <div class="text-8xl mb-4 bounce-icon inline-block cursor-pointer" onclick="celebrateClick(this)">⚡</div>
-      <h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-        DevFlow AI
-      </h1>
-      <p class="text-3xl text-gray-300 mb-6">Predict Bottlenecks Before They Happen</p>
-      <p class="text-xl text-gray-400">Ship 40% Faster with AI-Powered Workflow Optimization</p>
-      
-      <!-- Interactive Counter -->
-      <div class="mt-8 inline-block">
-        <div class="bg-red-500/30 border border-red-400 rounded-lg px-6 py-3">
-          <span class="text-sm text-gray-300">💸 Money Lost Right Now: $</span>
-          <span id="moneyCounter" class="text-2xl font-bold text-red-400">0</span>
-          <span class="text-sm text-gray-400"> (teams wasting time)</span>
-        </div>
-      </div>
-    </div>
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const audioEngineRef = useRef(null);
+  const detectionIntervalRef = useRef(null);
+  const faceApiRef = useRef(null);
 
-    <!-- Interactive Stats Cards -->
-    <div class="grid md:grid-cols-4 gap-6 mb-12">
-      <div class="card-hover bg-gradient-to-br from-blue-500/30 to-cyan-500/30 p-6 rounded-xl border border-blue-400/50 text-center cursor-pointer" onclick="animateCard(this)">
-        <div class="text-5xl font-bold text-blue-400 mb-2">4.2</div>
-        <div class="text-sm text-gray-400">days</div>
-        <div class="text-gray-300 mt-2">Avg PR Time</div>
-        <div class="text-xs text-gray-500 mt-1">(BEFORE)</div>
-      </div>
-      <div class="card-hover bg-gradient-to-br from-green-500/30 to-emerald-500/30 p-6 rounded-xl border border-green-400/50 text-center cursor-pointer" onclick="animateCard(this)">
-        <div class="text-5xl font-bold text-green-400 mb-2">1.5</div>
-        <div class="text-sm text-gray-400">hours</div>
-        <div class="text-gray-300 mt-2">Avg PR Time</div>
-        <div class="text-xs text-gray-500 mt-1">(AFTER) ✨</div>
-      </div>
-      <div class="card-hover bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-6 rounded-xl border border-purple-400/50 text-center cursor-pointer" onclick="animateCard(this)">
-        <div class="text-5xl font-bold text-purple-400 mb-2">96</div>
-        <div class="text-sm text-gray-400">%</div>
-        <div class="text-gray-300 mt-2">Faster Delivery</div>
-        <div class="text-xs text-green-400 mt-1">↑ Click me!</div>
-      </div>
-      <div class="card-hover bg-gradient-to-br from-orange-500/30 to-red-500/30 p-6 rounded-xl border border-orange-400/50 text-center cursor-pointer" onclick="animateCard(this)">
-        <div class="text-5xl font-bold text-orange-400 mb-2">40</div>
-        <div class="text-sm text-gray-400">%</div>
-        <div class="text-gray-300 mt-2">Productivity Gain</div>
-        <div class="text-xs text-green-400 mt-1">↑ Click me!</div>
-      </div>
-    </div>
-
-    <!-- Main Demo Section -->
-    <div class="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-white/10 mb-12 slide-in">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-4xl font-bold">🤖 AI Workflow Analysis</h2>
-        <div class="text-right">
-          <div class="text-sm text-gray-400">Analysis Count</div>
-          <div class="text-3xl font-bold text-purple-400" id="analysisCount">0</div>
-        </div>
-      </div>
-      
-      <!-- Live Metrics Dashboard -->
-      <div class="grid md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-blue-500/20 p-6 rounded-xl border border-blue-400/30 card-hover cursor-pointer" onclick="pulseMetric(this)">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-sm text-gray-400">⏱️ PR Merge Time</div>
-            <div class="text-xs bg-blue-500/30 px-2 py-1 rounded">LIVE</div>
-          </div>
-          <div class="text-4xl font-bold text-blue-400" id="prTime">4.2 days</div>
-          <div class="text-xs text-gray-500 mt-2">Target: &lt; 2 hours</div>
-        </div>
-        <div class="bg-red-500/20 p-6 rounded-xl border border-red-400/30 card-hover cursor-pointer" onclick="pulseMetric(this)">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-sm text-gray-400">🚫 Blocked Tasks</div>
-            <div class="text-xs bg-red-500/30 px-2 py-1 rounded">CRITICAL</div>
-          </div>
-          <div class="text-4xl font-bold text-red-400" id="blockedTasks">12</div>
-          <div class="text-xs text-gray-500 mt-2">Immediate attention needed</div>
-        </div>
-        <div class="bg-green-500/20 p-6 rounded-xl border border-green-400/30 card-hover cursor-pointer" onclick="pulseMetric(this)">
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-sm text-gray-400">📊 Efficiency</div>
-            <div class="text-xs bg-green-500/30 px-2 py-1 rounded">IMPROVING</div>
-          </div>
-          <div class="text-4xl font-bold text-green-400" id="efficiency">65%</div>
-          <div class="text-xs text-gray-500 mt-2">Industry avg: 68%</div>
-        </div>
-      </div>
-
-      <!-- Interactive Analysis Button -->
-      <button 
-        onclick="runAnalysis()" 
-        id="analyzeBtn"
-        class="w-full py-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-xl hover:scale-105 transition pulse-glow mb-6">
-        <span id="btnText">⚡ Run AI Analysis</span>
-      </button>
-
-      <!-- Enhanced Progress Bar -->
-      <div id="progressBar" class="hidden mb-8">
-        <div class="relative">
-          <div class="bg-white/10 rounded-full h-6 overflow-hidden">
-            <div id="progress" class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 h-full transition-all duration-300 relative" style="width: 0%">
-              <div class="absolute inset-0 bg-white/30 animate-pulse"></div>
-            </div>
-          </div>
-          <div class="flex justify-between mt-2 text-xs text-gray-400">
-            <span id="progressText">Starting analysis...</span>
-            <span id="progressPercent">0%</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Interactive Results -->
-      <div id="results" class="hidden space-y-4">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-3xl font-bold">✅ AI-Detected Bottlenecks</h3>
-          <button onclick="fixAllBottlenecks()" class="px-6 py-2 bg-green-500 hover:bg-green-600 rounded-lg font-semibold transition">
-            🚀 Fix All Issues
-          </button>
-        </div>
+  // Load face-api.js models
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        setStatus('Loading AI models...');
         
-        <div class="slide-in bg-red-500/20 p-6 rounded-xl border-l-4 border-red-500 card-hover cursor-pointer" onclick="toggleDetails(this, 'detail1')">
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <h4 class="font-bold text-xl mb-1">🚨 PR #247 blocked for 3 days</h4>
-              <div class="text-sm text-gray-400">Click for details ↓</div>
-            </div>
-            <span class="px-4 py-2 bg-red-500 rounded-full text-sm font-semibold animate-pulse">High Impact</span>
-          </div>
-          <div id="detail1" class="hidden mt-4 border-t border-white/10 pt-4">
-            <p class="text-gray-300 mb-4">💡 <strong>AI Suggestion:</strong> Auto-assign to available reviewer Sarah (85% expertise match based on previous contributions)</p>
-            <div class="bg-black/30 p-4 rounded-lg mb-3">
-              <div class="text-sm text-gray-400 mb-2">Predicted Impact:</div>
-              <div class="text-green-400">✓ Reduce wait time by 2.5 days</div>
-              <div class="text-green-400">✓ Unblock 2 dependent PRs</div>
-              <div class="text-green-400">✓ Save ~$800 in lost productivity</div>
-            </div>
-            <button onclick="applyFix(this, event)" class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:scale-105 rounded-lg font-semibold transition">
-              ✨ Apply AI Solution
-            </button>
-          </div>
-        </div>
-
-        <div class="slide-in bg-yellow-500/20 p-6 rounded-xl border-l-4 border-yellow-500 card-hover cursor-pointer" onclick="toggleDetails(this, 'detail2')">
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <h4 class="font-bold text-xl mb-1">⚠️ 5 dependencies waiting on Team B</h4>
-              <div class="text-sm text-gray-400">Click for details ↓</div>
-            </div>
-            <span class="px-4 py-2 bg-yellow-500 rounded-full text-sm font-semibold">Medium Impact</span>
-          </div>
-          <div id="detail2" class="hidden mt-4 border-t border-white/10 pt-4">
-            <p class="text-gray-300 mb-4">💡 <strong>AI Suggestion:</strong> Schedule sync meeting today at 2 PM when all 3 teams are available</p>
-            <div class="bg-black/30 p-4 rounded-lg mb-3">
-              <div class="text-sm text-gray-400 mb-2">Affected Tasks:</div>
-              <div class="text-orange-400">• User authentication module</div>
-              <div class="text-orange-400">• Payment gateway integration</div>
-              <div class="text-orange-400">• API rate limiting</div>
-            </div>
-            <button onclick="applyFix(this, event)" class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:scale-105 rounded-lg font-semibold transition">
-              ✨ Schedule Meeting
-            </button>
-          </div>
-        </div>
-
-        <div class="slide-in bg-blue-500/20 p-6 rounded-xl border-l-4 border-blue-500 card-hover cursor-pointer" onclick="toggleDetails(this, 'detail3')">
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <h4 class="font-bold text-xl mb-1">ℹ️ Code review backlog growing</h4>
-              <div class="text-sm text-gray-400">Click for details ↓</div>
-            </div>
-            <span class="px-4 py-2 bg-blue-500 rounded-full text-sm font-semibold">Low Impact</span>
-          </div>
-          <div id="detail3" class="hidden mt-4 border-t border-white/10 pt-4">
-            <p class="text-gray-300 mb-4">💡 <strong>AI Suggestion:</strong> Enable AI-assisted reviews for routine changes (style, formatting, simple logic)</p>
-            <div class="bg-black/30 p-4 rounded-lg mb-3">
-              <div class="text-sm text-gray-400 mb-2">Statistics:</div>
-              <div class="text-blue-400">• 23 PRs waiting review</div>
-              <div class="text-blue-400">• Average wait: 18 hours</div>
-              <div class="text-blue-400">• 60% are routine changes</div>
-            </div>
-            <button onclick="applyFix(this, event)" class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:scale-105 rounded-lg font-semibold transition">
-              ✨ Enable AI Reviews
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Interactive CTA -->
-    <div class="text-center bg-gradient-to-r from-purple-500/20 to-pink-500/20 p-12 rounded-2xl border border-purple-400/30 pulse-glow">
-      <h2 class="text-5xl font-bold mb-6">🚀 Transform Your Workflow</h2>
-      <p class="text-2xl text-gray-300 mb-8">Join 25+ developers shipping 40% faster</p>
-      <div class="flex gap-4 justify-center flex-wrap">
-        <button onclick="ctaClick('access')" class="px-10 py-5 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold rounded-lg hover:scale-110 transition text-xl">
-          🎯 Request Early Access
-        </button>
-        <button onclick="ctaClick('github')" class="px-10 py-5 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition text-xl font-bold">
-          💻 View on GitHub
-        </button>
-      </div>
-      <div class="mt-6 text-sm text-gray-400">
-        ⭐ <span id="starCount">247</span> developers already interested
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg hidden transition-all z-50">
-    <div class="flex items-center gap-3">
-      <span class="text-2xl">✅</span>
-      <span id="toastText">Success!</span>
-    </div>
-  </div>
-
-  <script>
-    // Money Counter
-    let moneyLost = 0;
-    setInterval(() => {
-      moneyLost += Math.floor(Math.random() * 50) + 10;
-      document.getElementById('moneyCounter').textContent = moneyLost.toLocaleString();
-    }, 1000);
-
-    // Floating particles
-    function createParticles() {
-      const container = document.getElementById('particles');
-      for(let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'absolute w-2 h-2 bg-purple-400 rounded-full opacity-30';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        particle.style.animation = `float ${5 + Math.random() * 10}s infinite`;
-        container.appendChild(particle);
+        // Load face-api from CDN
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+        script.async = true;
+        
+        script.onload = async () => {
+          faceApiRef.current = window.faceapi;
+          const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+          
+          await faceApiRef.current.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+          await faceApiRef.current.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+          
+          setIsLoading(false);
+          setStatus('Ready! Click "Start Vibe Check"');
+        };
+        
+        script.onerror = () => {
+          setError('Failed to load face detection models');
+          setIsLoading(false);
+        };
+        
+        document.body.appendChild(script);
+      } catch (err) {
+        setError('Error loading models: ' + err.message);
+        setIsLoading(false);
       }
-    }
-    createParticles();
+    };
 
-    function celebrateClick(el) {
-      el.style.transform = 'scale(1.5) rotate(360deg)';
-      setTimeout(() => el.style.transform = '', 1000);
-      showToast('⚡ Energy recharged!');
+    loadModels();
+
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+      if (audioEngineRef.current) {
+        audioEngineRef.current.stop();
+      }
+    };
+  }, []);
+
+  // Audio Engine Class
+  class AudioEngine {
+    constructor() {
+      this.synths = {};
+      this.loops = [];
+      this.isPlaying = false;
+      this.currentEmotion = 'neutral';
     }
 
-    function animateCard(el) {
-      el.style.transform = 'scale(1.1) rotate(5deg)';
-      setTimeout(() => el.style.transform = '', 300);
+    async initialize() {
+      await Tone.start();
+      
+      this.synths.bass = new Tone.Synth({
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.1, decay: 0.2, sustain: 0.5, release: 0.8 },
+        volume: -10
+      }).toDestination();
+
+      this.synths.melody = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.05, decay: 0.1, sustain: 0.3, release: 0.5 },
+        volume: -15
+      }).toDestination();
+
+      this.synths.pad = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'sine' },
+        envelope: { attack: 1, decay: 0.5, sustain: 0.8, release: 2 },
+        volume: -20
+      }).toDestination();
     }
 
-    function pulseMetric(el) {
-      el.style.animation = 'pulse 0.5s';
-      setTimeout(() => el.style.animation = '', 500);
-    }
-
-    let analysisCounter = 0;
-    function runAnalysis() {
-      const btn = document.getElementById('analyzeBtn');
-      const btnText = document.getElementById('btnText');
-      const progressBar = document.getElementById('progressBar');
-      const progress = document.getElementById('progress');
-      const results = document.getElementById('results');
-      const progressText = document.getElementById('progressText');
-      const progressPercent = document.getElementById('progressPercent');
-      
-      analysisCounter++;
-      document.getElementById('analysisCount').textContent = analysisCounter;
-      
-      btn.disabled = true;
-      btnText.textContent = '🔄 Analyzing...';
-      progressBar.classList.remove('hidden');
-      results.classList.add('hidden');
-      
-      const steps = [
-        'Connecting to repositories...',
-        'Analyzing PR patterns...',
-        'Scanning dependencies...',
-        'Detecting bottlenecks...',
-        'Generating solutions...'
-      ];
-      
-      let width = 0;
-      let step = 0;
-      const interval = setInterval(() => {
-        width += 20;
-        progress.style.width = width + '%';
-        progressPercent.textContent = width + '%';
-        progressText.textContent = steps[step] || 'Finalizing...';
-        step++;
-        
-        if (width >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            progressBar.classList.add('hidden');
-            results.classList.remove('hidden');
-            btn.disabled = false;
-            btnText.textContent = '✅ Analysis Complete - Run Again';
-            
-            document.getElementById('prTime').textContent = '1.5 hours';
-            document.getElementById('prTime').parentElement.className = 'bg-green-500/20 p-6 rounded-xl border border-green-400/30 card-hover cursor-pointer';
-            document.getElementById('blockedTasks').textContent = '2';
-            document.getElementById('blockedTasks').parentElement.className = 'bg-green-500/20 p-6 rounded-xl border border-green-400/30 card-hover cursor-pointer';
-            document.getElementById('efficiency').textContent = '94%';
-            
-            showToast('🎉 Found 3 bottlenecks and solutions!');
-          }, 500);
+    getMusicParams(emotionName, intensity) {
+      const params = {
+        neutral: {
+          tempo: 90,
+          key: 'C',
+          mode: 'major',
+          bassPattern: [0, 4, 0, 4],
+          melody: [0, 2, 4, 7],
+          timbre: 'warm'
+        },
+        happy: {
+          tempo: 120 + (intensity * 30),
+          key: 'C',
+          mode: 'major',
+          bassPattern: [0, 2, 4, 2],
+          melody: [0, 4, 7, 9, 7, 4],
+          timbre: 'bright'
+        },
+        sad: {
+          tempo: 60 + (intensity * 20),
+          key: 'A',
+          mode: 'minor',
+          bassPattern: [0, 3, 0, 3],
+          melody: [0, 2, 3, 5, 3],
+          timbre: 'dark'
+        },
+        angry: {
+          tempo: 140 + (intensity * 20),
+          key: 'E',
+          mode: 'minor',
+          bassPattern: [0, 0, 7, 7],
+          melody: [0, 3, 7, 10],
+          timbre: 'dark'
+        },
+        surprised: {
+          tempo: 110 + (intensity * 30),
+          key: 'D',
+          mode: 'major',
+          bassPattern: [0, 5, 7, 5],
+          melody: [0, 5, 9, 12, 9],
+          timbre: 'ethereal'
+        },
+        fearful: {
+          tempo: 100 + (intensity * 25),
+          key: 'F',
+          mode: 'minor',
+          bassPattern: [0, 0, 5, 5],
+          melody: [0, 1, 5, 8],
+          timbre: 'dark'
         }
-      }, 400);
+      };
+
+      return params[emotionName] || params.neutral;
     }
 
-    function toggleDetails(card, detailId) {
-      const detail = document.getElementById(detailId);
-      detail.classList.toggle('hidden');
-    }
-
-    function applyFix(button, event) {
-      event.stopPropagation();
-      button.textContent = '✅ Applied!';
-      button.classList.remove('from-green-500', 'to-emerald-500');
-      button.classList.add('bg-green-600');
-      button.disabled = true;
-      showToast('🚀 Solution applied successfully!');
+    getScale(key, mode) {
+      const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
+      const minorIntervals = [0, 2, 3, 5, 7, 8, 10];
+      const intervals = mode === 'major' ? majorIntervals : minorIntervals;
       
-      setTimeout(() => {
-        const blocked = document.getElementById('blockedTasks');
-        blocked.textContent = Math.max(0, parseInt(blocked.textContent) - 1);
-      }, 1000);
+      const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const keyIndex = notes.indexOf(key);
+      
+      return intervals.map(i => notes[(keyIndex + i) % 12]);
     }
 
-    function fixAllBottlenecks() {
-      showToast('🎯 Applying all 3 solutions...');
-      setTimeout(() => {
-        document.getElementById('blockedTasks').textContent = '0';
-        document.getElementById('efficiency').textContent = '98%';
-        showToast('✨ All bottlenecks resolved!');
-      }, 2000);
+    start(emotionName, intensity) {
+      this.stop();
+      
+      const params = this.getMusicParams(emotionName, intensity);
+      Tone.Transport.bpm.value = params.tempo;
+      
+      const scale = this.getScale(params.key, params.mode);
+      
+      // Bass loop
+      const bassLoop = new Tone.Loop((time) => {
+        params.bassPattern.forEach((degree, i) => {
+          this.synths.bass.triggerAttackRelease(
+            scale[degree % scale.length] + '2',
+            '4n',
+            time + i * 0.5
+          );
+        });
+      }, '2m');
+
+      // Melody loop
+      const melodyLoop = new Tone.Loop((time) => {
+        params.melody.forEach((degree, i) => {
+          this.synths.melody.triggerAttackRelease(
+            scale[degree % scale.length] + '4',
+            '8n',
+            time + i * 0.25
+          );
+        });
+      }, '4m');
+
+      // Pad loop
+      const padLoop = new Tone.Loop((time) => {
+        const chord = [
+          scale[0] + '3',
+          scale[2 % scale.length] + '3',
+          scale[4 % scale.length] + '3'
+        ];
+        this.synths.pad.triggerAttackRelease(chord, '1m', time);
+      }, '1m');
+
+      this.loops = [bassLoop, melodyLoop, padLoop];
+      
+      bassLoop.start(0);
+      melodyLoop.start(0);
+      padLoop.start(0);
+      
+      Tone.Transport.start();
+      this.isPlaying = true;
+      this.currentEmotion = emotionName;
     }
 
-    function ctaClick(action) {
-      if (action === 'access') {
-        showToast('🎉 Thanks for your interest! Check your email!');
-        const stars = document.getElementById('starCount');
-        stars.textContent = parseInt(stars.textContent) + 1;
-      } else {
-        showToast('🔗 Opening GitHub repository...');
+    stop() {
+      this.loops.forEach(loop => {
+        loop.stop();
+        loop.dispose();
+      });
+      this.loops = [];
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+      this.isPlaying = false;
+    }
+  }
+
+  const startVibeCheck = async () => {
+    try {
+      setStatus('Starting webcam...');
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 640, height: 480 } 
+      });
+      
+      videoRef.current.srcObject = stream;
+      await new Promise(resolve => {
+        videoRef.current.onloadedmetadata = resolve;
+      });
+      
+      if (!audioEngineRef.current) {
+        audioEngineRef.current = new AudioEngine();
+        await audioEngineRef.current.initialize();
       }
+      
+      setIsRunning(true);
+      setStatus('Detecting your vibe...');
+      
+      detectEmotions();
+    } catch (err) {
+      setError('Camera access denied. Please allow camera access.');
+      setStatus('Camera error');
+    }
+  };
+
+  const detectEmotions = async () => {
+    if (!videoRef.current || !faceApiRef.current) return;
+
+    try {
+      const detection = await faceApiRef.current
+        .detectSingleFace(videoRef.current, new faceApiRef.current.TinyFaceDetectorOptions())
+        .withFaceExpressions();
+
+      if (detection) {
+        const expressions = detection.expressions;
+        
+        // Get dominant emotion
+        let maxEmotion = 'neutral';
+        let maxValue = 0;
+        
+        Object.entries(expressions).forEach(([emotionName, value]) => {
+          if (value > maxValue) {
+            maxValue = value;
+            maxEmotion = emotionName;
+          }
+        });
+
+        setEmotion({ name: maxEmotion, intensity: maxValue });
+        setStatus(`Vibe: ${maxEmotion} (${(maxValue * 100).toFixed(0)}%)`);
+
+        // Update music if emotion changed significantly
+        if (audioEngineRef.current) {
+          if (!audioEngineRef.current.isPlaying || 
+              audioEngineRef.current.currentEmotion !== maxEmotion) {
+            audioEngineRef.current.start(maxEmotion, maxValue);
+          }
+        }
+
+        // Draw face detection
+        if (canvasRef.current) {
+          const canvas = canvasRef.current;
+          const displaySize = { width: 640, height: 480 };
+          faceApiRef.current.matchDimensions(canvas, displaySize);
+          
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          const resizedDetection = faceApiRef.current.resizeResults(detection, displaySize);
+          faceApiRef.current.draw.drawDetections(canvas, resizedDetection);
+        }
+      } else {
+        setStatus('No face detected - look at the camera');
+      }
+    } catch (err) {
+      console.error('Detection error:', err);
     }
 
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      const toastText = document.getElementById('toastText');
-      toastText.textContent = message;
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3000);
+    if (isRunning) {
+      setTimeout(detectEmotions, 500);
     }
-  </script>
-</body>
-</html>
+  };
+
+  const stopVibeCheck = () => {
+    setIsRunning(false);
+    if (audioEngineRef.current) {
+      audioEngineRef.current.stop();
+    }
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+    }
+    setStatus('Stopped');
+    setEmotion({ name: 'neutral', intensity: 0 });
+  };
+
+  const emotionColors = {
+    neutral: '#6B7280',
+    happy: '#FBBF24',
+    sad: '#3B82F6',
+    angry: '#EF4444',
+    surprised: '#A78BFA',
+    fearful: '#8B5CF6',
+    disgusted: '#10B981'
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-6xl font-bold mb-4">🎵 Vibe Check</h1>
+          <p className="text-xl text-blue-200">Your emotions, sonified in real-time</p>
+          <p className="text-sm text-blue-300 mt-2">AI reads your face and generates music that matches your mood</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-6">
+            <p className="text-red-200">{error}</p>
+          </div>
+        )}
+
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-6">
+          <div className="relative mb-4">
+            <video 
+              ref={videoRef}
+              autoPlay 
+              muted 
+              className="w-full rounded-lg"
+              style={{ transform: 'scaleX(-1)' }}
+            />
+            <canvas 
+              ref={canvasRef}
+              width="640"
+              height="480"
+              className="absolute top-0 left-0 w-full h-full"
+              style={{ transform: 'scaleX(-1)' }}
+            />
+          </div>
+
+          <div className="text-center mb-6">
+            <div 
+              className="inline-block px-8 py-4 rounded-full text-2xl font-bold mb-4"
+              style={{ backgroundColor: emotionColors[emotion.name] + '40' }}
+            >
+              {emotion.name.toUpperCase()}
+            </div>
+            
+            <div className="w-full bg-gray-700 rounded-full h-6 mb-4">
+              <div 
+                className="h-6 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${emotion.intensity * 100}%`,
+                  backgroundColor: emotionColors[emotion.name]
+                }}
+              />
+            </div>
+
+            <p className="text-lg text-blue-200">{status}</p>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            {!isRunning ? (
+              <button
+                onClick={startVibeCheck}
+                disabled={isLoading}
+                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-bold text-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {isLoading ? 'Loading...' : 'Start Vibe Check'}
+              </button>
+            ) : (
+              <button
+                onClick={stopVibeCheck}
+                className="px-8 py-4 bg-red-500 rounded-lg font-bold text-xl hover:bg-red-600 transition-all"
+              >
+                Stop
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+          <h3 className="text-xl font-bold mb-3">How it works:</h3>
+          <ul className="space-y-2 text-blue-200">
+            <li>✨ AI detects your facial expressions in real-time</li>
+            <li>🎵 Generates unique music that matches your emotional state</li>
+            <li>🔄 Music evolves as your emotions change</li>
+            <li>🎹 Different emotions = different melodies, tempos, and keys</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default VibeCheck;
