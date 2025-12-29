@@ -1,3 +1,81 @@
+name": "vibe-check",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tone": "^14.7.77"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "vite": "^5.0.8"
+  }
+}
+
+// ============= vite.config.js =============
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+
+// ============= tailwind.config.js =============
+export default {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  theme: { extend: {} },
+  plugins: [],
+}
+
+// ============= postcss.config.js =============
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+// ============= index.html =============
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎵 Vibe Check AI</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+// ============= src/main.jsx =============
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+
+// ============= src/index.css =============
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ============= src/App.jsx =============
 import React, { useState, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 
@@ -11,16 +89,23 @@ const VibeCheck = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const audioEngineRef = useRef(null);
-  const detectionIntervalRef = useRef(null);
   const faceApiRef = useRef(null);
 
-  // Load face-api.js models
   useEffect(() => {
     const loadModels = async () => {
       try {
         setStatus('Loading AI models...');
         
-        // Load face-api from CDN
+        if (window.faceapi) {
+          faceApiRef.current = window.faceapi;
+          const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+          await faceApiRef.current.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+          await faceApiRef.current.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+          setIsLoading(false);
+          setStatus('Ready! Click "Start Vibe Check"');
+          return;
+        }
+        
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
         script.async = true;
@@ -28,10 +113,8 @@ const VibeCheck = () => {
         script.onload = async () => {
           faceApiRef.current = window.faceapi;
           const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
-          
           await faceApiRef.current.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
           await faceApiRef.current.nets.faceExpressionNet.loadFromUri(MODEL_URL);
-          
           setIsLoading(false);
           setStatus('Ready! Click "Start Vibe Check"');
         };
@@ -51,16 +134,12 @@ const VibeCheck = () => {
     loadModels();
 
     return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
       if (audioEngineRef.current) {
         audioEngineRef.current.stop();
       }
     };
   }, []);
 
-  // Audio Engine Class
   class AudioEngine {
     constructor() {
       this.synths = {};
@@ -93,56 +172,13 @@ const VibeCheck = () => {
 
     getMusicParams(emotionName, intensity) {
       const params = {
-        neutral: {
-          tempo: 90,
-          key: 'C',
-          mode: 'major',
-          bassPattern: [0, 4, 0, 4],
-          melody: [0, 2, 4, 7],
-          timbre: 'warm'
-        },
-        happy: {
-          tempo: 120 + (intensity * 30),
-          key: 'C',
-          mode: 'major',
-          bassPattern: [0, 2, 4, 2],
-          melody: [0, 4, 7, 9, 7, 4],
-          timbre: 'bright'
-        },
-        sad: {
-          tempo: 60 + (intensity * 20),
-          key: 'A',
-          mode: 'minor',
-          bassPattern: [0, 3, 0, 3],
-          melody: [0, 2, 3, 5, 3],
-          timbre: 'dark'
-        },
-        angry: {
-          tempo: 140 + (intensity * 20),
-          key: 'E',
-          mode: 'minor',
-          bassPattern: [0, 0, 7, 7],
-          melody: [0, 3, 7, 10],
-          timbre: 'dark'
-        },
-        surprised: {
-          tempo: 110 + (intensity * 30),
-          key: 'D',
-          mode: 'major',
-          bassPattern: [0, 5, 7, 5],
-          melody: [0, 5, 9, 12, 9],
-          timbre: 'ethereal'
-        },
-        fearful: {
-          tempo: 100 + (intensity * 25),
-          key: 'F',
-          mode: 'minor',
-          bassPattern: [0, 0, 5, 5],
-          melody: [0, 1, 5, 8],
-          timbre: 'dark'
-        }
+        neutral: { tempo: 90, key: 'C', mode: 'major', bassPattern: [0, 4, 0, 4], melody: [0, 2, 4, 7] },
+        happy: { tempo: 120 + (intensity * 30), key: 'C', mode: 'major', bassPattern: [0, 2, 4, 2], melody: [0, 4, 7, 9, 7, 4] },
+        sad: { tempo: 60 + (intensity * 20), key: 'A', mode: 'minor', bassPattern: [0, 3, 0, 3], melody: [0, 2, 3, 5, 3] },
+        angry: { tempo: 140 + (intensity * 20), key: 'E', mode: 'minor', bassPattern: [0, 0, 7, 7], melody: [0, 3, 7, 10] },
+        surprised: { tempo: 110 + (intensity * 30), key: 'D', mode: 'major', bassPattern: [0, 5, 7, 5], melody: [0, 5, 9, 12, 9] },
+        fearful: { tempo: 100 + (intensity * 25), key: 'F', mode: 'minor', bassPattern: [0, 0, 5, 5], melody: [0, 1, 5, 8] }
       };
-
       return params[emotionName] || params.neutral;
     }
 
@@ -150,69 +186,45 @@ const VibeCheck = () => {
       const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
       const minorIntervals = [0, 2, 3, 5, 7, 8, 10];
       const intervals = mode === 'major' ? majorIntervals : minorIntervals;
-      
       const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
       const keyIndex = notes.indexOf(key);
-      
       return intervals.map(i => notes[(keyIndex + i) % 12]);
     }
 
     start(emotionName, intensity) {
       this.stop();
-      
       const params = this.getMusicParams(emotionName, intensity);
       Tone.Transport.bpm.value = params.tempo;
-      
       const scale = this.getScale(params.key, params.mode);
       
-      // Bass loop
       const bassLoop = new Tone.Loop((time) => {
         params.bassPattern.forEach((degree, i) => {
-          this.synths.bass.triggerAttackRelease(
-            scale[degree % scale.length] + '2',
-            '4n',
-            time + i * 0.5
-          );
+          this.synths.bass.triggerAttackRelease(scale[degree % scale.length] + '2', '4n', time + i * 0.5);
         });
       }, '2m');
 
-      // Melody loop
       const melodyLoop = new Tone.Loop((time) => {
         params.melody.forEach((degree, i) => {
-          this.synths.melody.triggerAttackRelease(
-            scale[degree % scale.length] + '4',
-            '8n',
-            time + i * 0.25
-          );
+          this.synths.melody.triggerAttackRelease(scale[degree % scale.length] + '4', '8n', time + i * 0.25);
         });
       }, '4m');
 
-      // Pad loop
       const padLoop = new Tone.Loop((time) => {
-        const chord = [
-          scale[0] + '3',
-          scale[2 % scale.length] + '3',
-          scale[4 % scale.length] + '3'
-        ];
+        const chord = [scale[0] + '3', scale[2 % scale.length] + '3', scale[4 % scale.length] + '3'];
         this.synths.pad.triggerAttackRelease(chord, '1m', time);
       }, '1m');
 
       this.loops = [bassLoop, melodyLoop, padLoop];
-      
       bassLoop.start(0);
       melodyLoop.start(0);
       padLoop.start(0);
-      
       Tone.Transport.start();
       this.isPlaying = true;
       this.currentEmotion = emotionName;
     }
 
     stop() {
-      this.loops.forEach(loop => {
-        loop.stop();
-        loop.dispose();
-      });
+      this.loops.forEach(loop => { loop.stop(); loop.dispose(); });
       this.loops = [];
       Tone.Transport.stop();
       Tone.Transport.cancel();
@@ -223,15 +235,9 @@ const VibeCheck = () => {
   const startVibeCheck = async () => {
     try {
       setStatus('Starting webcam...');
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 640, height: 480 } 
-      });
-      
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
       videoRef.current.srcObject = stream;
-      await new Promise(resolve => {
-        videoRef.current.onloadedmetadata = resolve;
-      });
+      await new Promise(resolve => { videoRef.current.onloadedmetadata = resolve; });
       
       if (!audioEngineRef.current) {
         audioEngineRef.current = new AudioEngine();
@@ -240,7 +246,6 @@ const VibeCheck = () => {
       
       setIsRunning(true);
       setStatus('Detecting your vibe...');
-      
       detectEmotions();
     } catch (err) {
       setError('Camera access denied. Please allow camera access.');
@@ -258,8 +263,6 @@ const VibeCheck = () => {
 
       if (detection) {
         const expressions = detection.expressions;
-        
-        // Get dominant emotion
         let maxEmotion = 'neutral';
         let maxValue = 0;
         
@@ -273,23 +276,18 @@ const VibeCheck = () => {
         setEmotion({ name: maxEmotion, intensity: maxValue });
         setStatus(`Vibe: ${maxEmotion} (${(maxValue * 100).toFixed(0)}%)`);
 
-        // Update music if emotion changed significantly
         if (audioEngineRef.current) {
-          if (!audioEngineRef.current.isPlaying || 
-              audioEngineRef.current.currentEmotion !== maxEmotion) {
+          if (!audioEngineRef.current.isPlaying || audioEngineRef.current.currentEmotion !== maxEmotion) {
             audioEngineRef.current.start(maxEmotion, maxValue);
           }
         }
 
-        // Draw face detection
         if (canvasRef.current) {
           const canvas = canvasRef.current;
           const displaySize = { width: 640, height: 480 };
           faceApiRef.current.matchDimensions(canvas, displaySize);
-          
           const ctx = canvas.getContext('2d');
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
           const resizedDetection = faceApiRef.current.resizeResults(detection, displaySize);
           faceApiRef.current.draw.drawDetections(canvas, resizedDetection);
         }
@@ -307,9 +305,7 @@ const VibeCheck = () => {
 
   const stopVibeCheck = () => {
     setIsRunning(false);
-    if (audioEngineRef.current) {
-      audioEngineRef.current.stop();
-    }
+    if (audioEngineRef.current) audioEngineRef.current.stop();
     if (videoRef.current && videoRef.current.srcObject) {
       videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     }
@@ -318,13 +314,8 @@ const VibeCheck = () => {
   };
 
   const emotionColors = {
-    neutral: '#6B7280',
-    happy: '#FBBF24',
-    sad: '#3B82F6',
-    angry: '#EF4444',
-    surprised: '#A78BFA',
-    fearful: '#8B5CF6',
-    disgusted: '#10B981'
+    neutral: '#6B7280', happy: '#FBBF24', sad: '#3B82F6',
+    angry: '#EF4444', surprised: '#A78BFA', fearful: '#8B5CF6', disgusted: '#10B981'
   };
 
   return (
@@ -344,38 +335,17 @@ const VibeCheck = () => {
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-6">
           <div className="relative mb-4">
-            <video 
-              ref={videoRef}
-              autoPlay 
-              muted 
-              className="w-full rounded-lg"
-              style={{ transform: 'scaleX(-1)' }}
-            />
-            <canvas 
-              ref={canvasRef}
-              width="640"
-              height="480"
-              className="absolute top-0 left-0 w-full h-full"
-              style={{ transform: 'scaleX(-1)' }}
-            />
+            <video ref={videoRef} autoPlay muted className="w-full rounded-lg" style={{ transform: 'scaleX(-1)' }} />
+            <canvas ref={canvasRef} width="640" height="480" className="absolute top-0 left-0 w-full h-full" style={{ transform: 'scaleX(-1)' }} />
           </div>
 
           <div className="text-center mb-6">
-            <div 
-              className="inline-block px-8 py-4 rounded-full text-2xl font-bold mb-4"
-              style={{ backgroundColor: emotionColors[emotion.name] + '40' }}
-            >
+            <div className="inline-block px-8 py-4 rounded-full text-2xl font-bold mb-4" style={{ backgroundColor: emotionColors[emotion.name] + '40' }}>
               {emotion.name.toUpperCase()}
             </div>
             
             <div className="w-full bg-gray-700 rounded-full h-6 mb-4">
-              <div 
-                className="h-6 rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${emotion.intensity * 100}%`,
-                  backgroundColor: emotionColors[emotion.name]
-                }}
-              />
+              <div className="h-6 rounded-full transition-all duration-300" style={{ width: `${emotion.intensity * 100}%`, backgroundColor: emotionColors[emotion.name] }} />
             </div>
 
             <p className="text-lg text-blue-200">{status}</p>
@@ -383,18 +353,11 @@ const VibeCheck = () => {
 
           <div className="flex gap-4 justify-center">
             {!isRunning ? (
-              <button
-                onClick={startVibeCheck}
-                disabled={isLoading}
-                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-bold text-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
+              <button onClick={startVibeCheck} disabled={isLoading} className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-bold text-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                 {isLoading ? 'Loading...' : 'Start Vibe Check'}
               </button>
             ) : (
-              <button
-                onClick={stopVibeCheck}
-                className="px-8 py-4 bg-red-500 rounded-lg font-bold text-xl hover:bg-red-600 transition-all"
-              >
+              <button onClick={stopVibeCheck} className="px-8 py-4 bg-red-500 rounded-lg font-bold text-xl hover:bg-red-600 transition-all">
                 Stop
               </button>
             )}
